@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="James Anderson" />
+
+
+<title>Loading Data</title>
+
+<script src="read_data_files/header-attrs-2.19/header-attrs.js"></script>
+<script src="read_data_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="read_data_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="read_data_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="read_data_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="read_data_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="read_data_files/navigation-1.1/tabsets.js"></script>
+<link href="read_data_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="read_data_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Loading Data</h1>
+<h4 class="author">James Anderson</h4>
+
+</div>
+
+
+<script src="https://cdn.datacamp.com/datacamp-light-latest.min.js"></script>
+<div id="welcome-to-r-language" class="section level1">
+<h1>Welcome to R Language</h1>
+<p>Hello and welcome to this tutorial on how to use the R scripting
+language. This tutorial will be broken into 9 parts with different
+subsystems in each one.</p>
+<div id="loading-data" class="section level2">
+<h2>Loading Data</h2>
+<div id="storing-simple-numbers" class="section level3">
+<h3>Storing Simple Numbers</h3>
+<p>To begin with we need to look at how to store basic data. We can name
+our data as anything we want, so long as it doesn’t start with a number.
+In this case we are using a and storing a 1 in that point.</p>
+<p>The a is not case sensitive and you can enter it as an upper case or
+lower case value. It can be anything that you would like to use. Use
+descriptive names. Quick tip, if you use consistent names your life can
+be easier.</p>
+<p>There are two ways that we can enter the data. The first way is using
+&lt;- to enter the number. Using the = sign also works, but due to
+issues in the base langauge (S plus) for R, it can throw errors. Best
+coding practices are to use = within functions if you create them and
+the &lt;- to assign data.</p>
+<p>Last is the number you enter. If you are assigning a single number
+you can just put that number. If you are putting multiple things in you
+would use c (for Combine) and put commas between the values.</p>
+<p>If you want to store text, you need to put the text between either
+single quotes or double quotes. Both examples are listed here.</p>
+<p>To recall the data that is stored, you just need to enter the name
+that you stored it under, in this case a, b, c, or d. Go ahead and try
+it.</p>
+<div data-datacamp-exercise="" data-height="300" data-encoded="true">
+eyJsYW5ndWFnZSI6InIiLCJzYW1wbGUiOiJhPC0xXG5iPC1jKDEsMiwzKVxuYzwtXCJZZXNcIlxuZDwtYyhcIlllc1wiLCBcIk5vXCIsIFwiWWVzXCIpXG5hXG5iXG5jXG5kIn0=
+</div>
+<p>Now lets try and problem with single variable.</p>
+<div data-datacamp-exercise="" data-height="300" data-encoded="true">
+eyJsYW5ndWFnZSI6InIiLCJzYW1wbGUiOiIjIENyZWF0ZSBhIHZhcmlhYmxlIGEsIGVxdWFsIHRvIDVcblxuXG4jIFByaW50IG91dCBhIiwic29sdXRpb24iOiIjIENyZWF0ZSBhIHZhcmlhYmxlIGEsIGVxdWFsIHRvIDVcbmEgPC0gNVxuXG4jIFByaW50IG91dCBhXG5hIiwic2N0IjoidGVzdF9vYmplY3QoXCJhXCIpXG50ZXN0X291dHB1dF9jb250YWlucyhcImFcIiwgaW5jb3JyZWN0X21zZyA9IFwiTWFrZSBzdXJlIHRvIHByaW50IGBhYC5cIilcbnN1Y2Nlc3NfbXNnKFwiR3JlYXQhXCIpIn0=
+</div>
+<p>Next lets create a group of numbers</p>
+<div data-datacamp-exercise="" data-height="300" data-encoded="true">
+eyJsYW5ndWFnZSI6InIiLCJzYW1wbGUiOiIjIENyZWF0ZSBhIHZhcmlhYmxlIGIsIGVxdWFsIHRvIDUsIDcsIDksIDEzXG5cblxuIyBQcmludCBvdXQgYiIsInNvbHV0aW9uIjoiIyBDcmVhdGUgYSB2YXJpYWJsZSBiLCB3aXRoIDUsIDcsIDksIGFuZCAxM1xuYiA8LSBjKDUsIDcsIDksIDEzKVxuXG4jIFByaW50IG91dCBiXG5iIiwic2N0IjoidGVzdF9vYmplY3QoXCJiXCIpXG50ZXN0X291dHB1dF9jb250YWlucyhcImJcIiwgaW5jb3JyZWN0X21zZyA9IFwiTWFrZSBzdXJlIHRvIHByaW50IGBiYC5cIilcbnN1Y2Nlc3NfbXNnKFwiR3JlYXQhXCIpIn0=
+</div>
+<p>Now, we can try the same thing again, but instead enter text.</p>
+<div data-datacamp-exercise="" data-height="300" data-encoded="true">
+eyJsYW5ndWFnZSI6InIiLCJzYW1wbGUiOiIjIENyZWF0ZSBhIHZhcmlhYmxlIGQsIHdpdGggeWVzLCBubywgeWVzLCB5ZXNcblxuXG4jIFByaW50IG91dCBkIiwic29sdXRpb24iOiIjIENyZWF0ZSBhIHZhcmlhYmxlIGQsIHdpdGggeWVzLCBubywgeWVzLCB5ZXNcbmQgPC0gYyhcInllc1wiLCBcIm5vXCIsIFwieWVzXCIsIFwieWVzXCIpXG5cbiMgUHJpbnQgb3V0IGRcbmQiLCJzY3QiOiJ0ZXN0X29iamVjdChcImRcIilcbnRlc3Rfb3V0cHV0X2NvbnRhaW5zKFwiZFwiLCBpbmNvcnJlY3RfbXNnID0gXCJNYWtlIHN1cmUgdG8gcHJpbnQgYGRgLlwiKVxuc3VjY2Vzc19tc2coXCJHcmVhdCFcIikifQ==
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
