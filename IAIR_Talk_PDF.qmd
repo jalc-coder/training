@@ -1,0 +1,497 @@
+---
+title: "R and R Studio Workflow for Data Reporting"
+author: "James Anderson"
+format: beamer
+editor: visual
+---
+
+## Introduction
+
+## Installation
+
+There are two ways you can use R and R Studio
+
+-   Install R <https://cran.r-project.org/>
+-   Install R Studio from POSIT <https://posit.co/download/rstudio-desktop/>
+-   Note the last link will have links to both R and R Studio
+
+## Online
+
+The second way is to work with it online
+
+-   Posit has an online option that is free
+-   Access at <https://posit.cloud/>
+-   You have a 25 projects and 25 hours free
+-   If you don't have Rstudio installed already please use that for today!
+
+## RMD file structure
+
+A RMD file is a way to create a document that will turn into PDF, Word, or HTML document with code in it.
+
+-   It allows you to use R, python, html, or other code in a document
+-   You can use LaTex writeup and YAML headers to create the document
+-   Lets go and look at one now!
+
+## Packages
+
+One of the most versatile part of R is the use of packages.
+
+### What are packages?
+
+-   I have some code that I made that other people have found useful
+-   I write it up and create a "package" of functions to use
+-   Other people can download and use the package
+
+## Some Important Packages
+
+-   Tidyverse: an ecosystem of packages by [Hadley Wickman](https://hadley.nz/)
+-   kableExtra: a handy table creation package that I use daily by [Hao Zhu](https://github.com/haozhu233)
+-   readxl: Importing excel files from [Jenny Bryan](https://www.rstudio.com/authors/jenny-bryan/)
+-   scales: Used mostly for percentages, also by Hadley Wickman
+
+## Installation and loading of Packages
+
+You use the command install.packages to install an individual package.
+
+```{r}
+#install.packages("tidyverse")
+```
+
+A package only has to be installed once. Once it is installed, you still have to load it into the environment in order to use it.
+
+```{r}
+library(tidyverse)
+```
+
+## The code sections
+
+R has some basic things that we can use in order to make it, well, useable.
+
+### Storing Objects
+
+The \<- symbol is used to store objects for later use without having to retype them
+
+-   The name of the object cannot start with a number
+
+```{r}
+store<-13
+store
+```
+
+It can be any name for the object, but please make sure it's descriptive
+
+### Lists
+
+R uses the letter c to start lists (The c means combine)
+
+-   You can use numbers or words in the list
+-   Words use quotations around each individual entry
+
+```{r}
+number.list<- c(1,2,3,4,5)
+number.list
+word.list<-c("apple", "orange", "dragon fruit", "Pineapple", "Mango")
+word.list
+```
+
+## Dataframes
+
+A data frame is a combination of rows and columns
+
+-   You can combine lists into a data frame
+-   You can import data as a data frame
+-   You can merge data using left join, right join, and inner joins (not covered today)
+
+### Combining lists using data.frame
+
+data.frame allows you to take lists of similar data and put them in as individual columns of data in a data frame.
+
+```{r}
+df<-data.frame(word.list, number.list)
+df
+```
+
+From here, I can call individual columns like so:
+
+```{r}
+df$number.list
+```
+
+Also, since this will most likely be turned into a table, we don't like those columns.
+
+-   We can rename the columns using the following command.
+-   When we do so, the way that the column pulls up changes (notice it's in single quotes now)
+
+```{r}
+colnames(df)<-c("Word List", "Number List")
+df
+df$`Word List`
+```
+
+## Importing Data
+
+We can use a couple different ways to import data
+
+R can load nearly all types of data including - CSV - Excel - SAS save files - Table Files - Text Files - Many more (I've even loaded GPS data files once)
+
+```{r}
+#Lets load a basic CSV
+cardata<-read.csv("mtcars.csv")
+cardata
+```
+
+## Using a GUI to make life easier!
+
+We don't always have things where they are easy, so we can make things easy for you to load!
+
+The top right of your Rstudio GUI has an area for Importing Data that we can use to make life easier!
+
+-   Make sure Environment Tab is selected
+-   Click on Import Dataset
+-   Select Type of Data you want to import (avoid base to make it more user friendly)
+-   If you are using POSIT online you need to upload your file now
+-   Click Browse to search for file
+-   Change the name in the bottom left to a descriptive name
+-   Copy the first two lines of code in the bottom right
+-   Paste the code into a code section
+
+## Naming Code Sections
+
+When you are working, things break randomly and you have to fix them
+
+We like to know where they break, especially if you are using code sections
+
+Use descriptive names by clicking on the wheel in the code section or by typing next to the r in the code section
+
+```{r You can name sections}
+
+```
+
+## Suppressing code, output, and messages
+
+We don't always want to show code, you usually don't want messages, and sometimes don't even want to run the code.
+
+-   We can suppress warnings like this
+
+```{r No warnings, warning=FALSE}
+
+```
+
+-   We can also suppress output like this
+
+```{r No output, include=FALSE}
+
+```
+
+-   We can also suppress code like this
+
+```{r No code, eval=FALSE, include=FALSE}
+
+```
+
+# Welcome to the TidyVerse!
+
+## Installation of tidyverse
+
+```{r}
+#installs the package
+install.packages("tidyverse")
+#loads the library (need to do only once per document)
+library(tidyverse)
+```
+
+## What is tidyverse?
+
+Tidyverse is a collection of packages created by Hadly Wickman. It allows for:
+
+-   Data wrangling from the dplyr package for filtering, transforming, and summarizing data
+-   Data Visualization from ggplot2 package for flexible and working visualizations
+-   All basic commands, such as pipes, interwork in the system allowing for ease of use
+
+
+## dplyr, the pipe, and summarise
+
+A lot of what we do in Institutional Research is to take data and summarize it. 
+
+The dplyr package uses pipes and summarise to do a lot of what we do easily.
+
+
+## Lets use the pipe
+
+I can use the pipe to take the output of one of the things I'm doing and use it in the next.
+
+If I want to only filter out, for instance, cars with 4 cylinders I can use filter
+```{r enter the pipe}
+cardata %>% filter(cyl == 4)
+```
+
+If I wanted to store that, I could
+
+```{r}
+cars.4cyl<-cardata %>% filter(cyl == 4)
+cars.4cyl
+```
+
+## Selecting Columns
+
+If I only want to select certain things, I can do that as well using select
+
+```{r}
+cardata %>% select(model, mpg, cyl, wt)
+car.selected<-cardata %>% select(model, mpg, cyl, wt)
+car.selected
+```
+
+## Summarizing
+
+
+I can use summarise in order to do basic statistical commands.
+
+It can create counts, means, max, min, standard deviation, and call upon different functions.
+```{r}
+cardata %>% select(model, mpg, cyl, wt) %>% summarise(CountCars = n(),AverageMpg = mean(mpg), MaxMpg = max(mpg), MinMpg = min(mpg), SDMpg = sd(mpg), RangeMPG = MaxMpg - MinMpg)
+cardata.summarise<-cardata %>% select(model, mpg, cyl, wt) %>% summarise(CountCars = n(),AverageMpg = mean(mpg), MaxMpg = max(mpg), MinMpg = min(mpg), SDMpg = sd(mpg), RangeMPG = MaxMpg - MinMpg)
+cardata.summarise
+```
+
+## Grouping
+
+The real power comes when you start using group_by in order to create wider tables.
+
+Lets group the cars based on cyl
+
+```{r}
+cardata %>% select(model, mpg, cyl, wt) %>% group_by(cyl) %>% summarise(CountCars = n(),AverageMpg = mean(mpg), MaxMpg = max(mpg), MinMpg = min(mpg), SDMpg = sd(mpg), RangeMPG = MaxMpg - MinMpg)
+table.car<-cardata %>% select(model, mpg, cyl, wt) %>% group_by(cyl) %>% summarise(CountCars = n(),AverageMpg = mean(mpg), MaxMpg = max(mpg), MinMpg = min(mpg), SDMpg = sd(mpg), RangeMPG = MaxMpg - MinMpg)
+table.car
+```
+
+# Graphing
+
+The package ggplot2 is a massive tool that has a wide variety of information in it.
+
+You can learn to plot many different things in the program
+
+-   Simple x by y plotting
+-   Adding extra dimensions through color and fill
+-   Create a wide variety of types of plots like line, smooth, histograms, and more!
+
+## ggplot
+
+Lets start with the pipe and into ggplot!
+
+
+```{r}
+car.plot<-cardata %>% ggplot(aes(x=hp, y=mpg))
+car.plot
+```
+
+Nothing shows up because we didn't tell it to do anything!
+
+## Types of plots
+
+We have a few different types of basic plots
+
+-   geom_point (or geom_jitter) adds a scatterplot
+-   geom_smooth adds a smooth line
+-   geom_histogram adds a histogram
+-   geom_boxplot adds a boxplot
+
+
+```{r}
+car.plot + geom_point()
+car.plot + geom_smooth()
+cardata %>% ggplot(aes(x=mpg)) + geom_histogram()
+cardata %>% ggplot(aes(y=mpg)) + geom_boxplot()
+```
+
+## Multiple elements in the same graph
+
+We can do multiple elements in the same graph as well. Just use a + and add more
+
+```{r}
+car.plot + geom_point() + geom_smooth()
+```
+
+## Color and fill
+
+We can use col and fill in aes to add a third dimension 
+
+```{r}
+cardata %>% ggplot(aes(x=hp, y=mpg, col = cyl)) + geom_point() + geom_smooth(se=FALSE)
+cardata %>% ggplot(aes(x = as.factor(cyl), y=mpg, fill = as.factor(cyl))) + geom_boxplot()
+```
+## Making them look better
+
+We can label the title, subtitle, x, y and legend using labs
+
+```{r}
+cardata %>% ggplot(aes(x = as.factor(cyl), y=mpg, fill = as.factor(cyl))) + geom_boxplot() + labs(x = "Number of Cylinders", y = "Miles Per Gallon", title="Boxplot of Miles Per Gallon", subtitle = "Grouped by Cylinder count", caption = "Based on Data from Motor Trend Road Test 1974", fill= "Number of Cylinders")
+```
+
+# Making Tables with kableExtra
+
+## The packages
+
+```{r}
+#install the package
+install.packages("kableExtra")
+#load the package
+library(kableExtra)
+```
+
+The kableExtra package is one that lets you create publication ready tables for use in pdf and HTML documents.
+
+We can use the tables we created in tidyverse in order to make tables.
+
+The hard part of this is that you can only see them when they are rendered (we will revisit this in a little bit)
+
+## The table we will use
+
+We made the table of MPG based on cylinders before. Lets use that now.
+
+```{r}
+table.car
+```
+
+A basic table is made using kable. We can see the basic output.
+
+```{r}
+kable(table.car)
+table.car.kable<-kable(table.car)
+```
+
+If we want to make it into a pdf, we use latex, if we are making an html, we use html.
+
+Note, once you use LaTex you will not be able to see it in the output only at the end!!!
+
+```{r}
+latex.table<-kable(table.car, "latex")
+latex.table
+```
+
+I use the booktabs = TRUE for a specific style of table
+
+Caption can be used in order to create a title to the table
+```{r}
+latex.table.booktabs<-kable(table.car, "latex", booktabs = TRUE, caption = "MPG Summary for Motor Trend Cars in 1974")
+latex.table.booktabs
+```
+
+## All the options
+
+I have played around with this code a lot to get the desired style. Here is an example of my code:
+
+You can hold position, scale text, repeat header if it scrolls over pages, and choose font size.
+
+These are all options and are not necessary
+```{r}
+latex.table.booktabs.complete<-kable(table.car, "latex", booktabs = TRUE, caption = "MPG Summary for Motor Trend Cars in 1974") %>%
+  kable_styling(latex_options = c("repeat_header", "scale_down", "hold_position"), font_size = 12)
+
+latex.table.booktabs.complete
+```
+
+
+
+## Exporting data to excel or csv
+
+Even if you create a nice report, it's always nice to keep a copy of your data in a csv or excel file.
+
+R has a few packages that can help with that!
+
+Writing to xlsx file
+
+```{r}
+#library for xlsx
+install.packages("openxlsx")
+library(openxlsx)
+```
+
+You can either write individual data frames or a list of data frames to multiple tabs in excel.
+
+```{r Individual data Frames}
+write.xlsx(cardata.summarise, file="cardata.xlsx")
+
+```
+
+
+```{r List of Data Frames into Different Tabs}
+list_of_dataframes<-list("Overall"=cardata, "Selected Car"=car.selected, cardata.summarise="Summarized")
+write.xlsx(list_of_dataframes, file="combined.xlsx")
+```
+
+
+## CSV File
+
+You can write to CSV file as well for better file storage.
+
+This is ideal for large data frames
+
+This takes no outside package
+
+```{r}
+write.csv(cardata, file="cardata_written.csv")
+```
+
+## The YAML headers
+
+
+YAML stands for YAML ain't Markdown Language
+
+Yes, it is recursive. No I didn't name it.
+
+It has basic information on how to render your document.
+
+You can add metadata, pictures, and options for the entire document in it.
+
+
+## LaTex commands and knitting
+
+
+There are some basic commands in LaTex that I use for reports.
+
+The main one is newpage
+
+\newpage create a line break in the document you are knitting.
+
+\landscape is another code that you can use in order to change orientation of the document
+
+You use the following code for the sections. Note the 4 `'s
+
+````{=tex}
+\begin{landscape}
+
+\end{landscape}
+\newpage
+````
+
+
+
+The last bit of LaTex I use is the section part
+
+````{=tex}
+\begin{landscape}
+\section{Section Name}
+
+\end{landscape}
+\newpage
+````
+
+This starts a landscape section, names it "Section Name", ends the landscape, and creates a new page.
+
+The code itself is in the middle.
+
+
+## The end
+
+Word of caution before dealing with YAML or LaTex sections. Save a copy before you start editing
+
+Once you are done with everything you can go to the top and hit render.
+
+Your document will run all the code and you will get a report.
+
+It will have all the code that you have included in the report, and markup, and information or text you put in it.
+
+
+## Questions??
