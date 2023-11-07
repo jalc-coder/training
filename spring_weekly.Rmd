@@ -1,0 +1,296 @@
+---
+title: "Weekly Headcount and Credit Hours Weekly Report Spring 2024"
+
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: "Office of Institutional Effectiveness and Research"
+geometry: margin=1cm
+output:
+  pdf_document: default
+header-includes:
+  - \usepackage{titling}
+  - \pretitle{\begin{center}
+    \includegraphics[width=2in,height=2in]{jalclogo.jpg}\LARGE\\}
+  - \posttitle{\end{center}}
+  
+---
+
+
+
+```{r Load Data, message=FALSE, warning=FALSE, include=FALSE}
+library(readxl)
+spring <- read_excel("~/spring data comparison.xlsx")
+comp<-read_excel("~/spring data comparison.xlsx", 
+    sheet = "unduplicated")
+
+```
+
+\newpage
+
+```{r Data Cleaning, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggrepel)
+library(tidyverse)
+library(kableExtra)
+library(scales)
+library(gghighlight)
+start.date<-as.Date("2023-10-02")
+todays.date<-Sys.Date()
+current.week<-as.numeric(floor(difftime(todays.date, start.date, units="weeks")))
+#current.week<-18  #18 is last
+table.overview<-spring
+te<-table.overview[,c(1:3,5,7, 9:10)]
+te <- te %>% filter(Week == current.week)
+head.total<-colSums(te[,3:5])
+head.total[4]<-head.total[3]-head.total[2]
+head.total[5]<-head.total[4]/head.total[2]
+head.total<-c("T", "Total", head.total)
+te<-te %>% filter(Week == current.week)
+te<-rbind(te, head.total)
+te$`Percent Change Headcount`<-as.numeric(te$`Percent Change Headcount`)
+te$`Percent Change Headcount`<-percent(te$`Percent Change Headcount`, accuracy = 0.1)
+te<-te[,c(2,5,4,7)]
+colnames(te)<-c("Division", "Enrollment 2024", "Enrollment 2023", "Change Course Enrollment")
+
+t<-table.overview[,c(1,2,4,6,8,11:12)]
+t<-t %>% filter(Week == current.week)
+t.total<-colSums(t[,3:5])
+t.total[4]<-t.total[3]-t.total[2]
+t.total<-c("Total", t.total)
+t<-t[,2:6]
+t<-rbind(t, t.total)
+t$Percent<-as.numeric(t$`Hour Difference`)/as.numeric(t$H23)
+t[is.na(t)]<-0
+colnames(t)<-c("Division", "H22", "H23", "H24", "Hour Difference", "Percent Hour Difference")
+t$`Percent Hour Difference`<-percent(t$`Percent Hour Difference`, accuracy = 0.1)
+t<-t[,c(1,4,3,6)]
+
+colnames(t)<-c("Division", "Hours 2024", "Hours 2023", "Hours Percent Change")
+th<-kable(t, "latex", booktabs = TRUE, caption = paste("Overview of Credit Hours for all divisions for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"), font_size = 12)
+sum.overview<-spring %>%  group_by(Week) %>% summarise(Headcount22 = sum(E22), Headcount23 = sum(E23), Headcount24 = sum(E24), Hour22 = sum(H22), Hour23 = sum(H23), Hour24 = sum(H24))
+Last<-c(comp[current.week, 3],sum.overview[current.week,3], sum.overview[current.week,6])
+Current<-c(comp[current.week,4], sum.overview[current.week,4], sum.overview[current.week,7])
+df<-rbind(unlist(Current), unlist(Last))
+Difference<-df[1,]-df[2,]
+df<-rbind(df, Difference)
+colnames(df)<-c("Headcount", "Course Enrollment", "Credit Hours")
+rownames(df)<-c("2024", "2023", "Difference")
+summary.table<-df
+te<-kable(te, "latex", booktabs = TRUE, caption = paste("Overview of Duplicated Course Enrollment for all divisions for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 12)
+th<-kable(t, "latex", booktabs = TRUE, caption = paste("Overview of Credit Hours for all divisions for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 12)
+ts<-kable(summary.table, "latex", booktabs = TRUE, caption = paste("Overview of Total Headcount, Course Enrollment, and Credit Hours for Week", current.week, sep = " ")) %>% kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 12)
+```
+
+
+
+# Overall
+
+```{r table and first graph, echo=FALSE, message=FALSE, warning=FALSE}
+ts
+te
+th
+pivot_longer(sum.overview, names_to = "Headcount", values_to = "number", cols = Headcount22:Headcount24) %>% ggplot(aes(x=Week, y=number, col=Headcount)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,23, by=1)) + labs(title="Course Enrollment Comparision Spring 2022 to Spring 2024", subtitle="Duplicated Headcount") + labs(x="Week", y="Enrollment") + scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+\newpage 
+```{r second graph, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(comp, cols=starts_with("Y"), names_to = "Year", values_to = "Enrollment") %>% ggplot(aes(x=Week, y=Enrollment, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,23, by=1)) + labs(title="Headcount Comparision Spring 2022 to Spring 2024", subtitle="Unduplicated Headcount") + labs(x="Week", y="Headcount") + scale_color_discrete(labels=c("Headcount 2022", "Headcount 2023", "Headcount 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r third graph, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(sum.overview, names_to = "Credits", values_to = "Number", cols = Hour22:Hour24) %>% ggplot(aes(x=Week, y=Number, col=Credits)) + geom_point() + geom_smooth(se=FALSE)  + labs(title="Credit Hour Comparision Spring 2022 to Spring 2024") + labs(x="Week", y="Credit Hours")  + scale_y_continuous(breaks = seq(0,35000,by=5000)) + scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', "Credit Hours 2024")) + geom_point(x=21, y=27614.6, color="blue")+ theme(legend.position="bottom", panel.grid.minor = element_blank()) + scale_x_continuous(breaks= seq(1,23, by=1))
+```
+
+\newpage
+
+# Allied Health
+
+```{r ah, echo=FALSE, message=FALSE, warning=FALSE}
+colnames(spring)<-c("Week", "Division", "E22", "H22", "E23", "H23", "E24", "H24", "Enrollment Diference", "Percent Change Headcount", "Hour Difference", "Percent Hour Difference")
+allied<-spring %>% filter(Division == "Allied Health")
+allied$`Percent Change Headcount`<-percent(allied$`Percent Change Headcount`, accuracy = 0.1)
+allied$`Percent Hour Difference`<-percent(allied$`Percent Hour Difference`, accuracy = 0.1)
+allied.headcount<-allied[,c(1:2,7,5,9:10)]
+allied.hours<-allied[,c(1:2, 8,6,11:12)]
+ah<-kable(allied.headcount[1:current.week,], "latex", booktabs = TRUE, caption = paste("Duplicated Course Enrollment of Allied Health for week", current.week, sep = " ")) %>%  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+ac<-kable(allied.hours[1:current.week,][1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of Allied Health for week", current.week, sep = " ")) %>%   kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+ah
+ac
+pivot_longer(allied[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth() + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to spring 2024", subtitle = "Allied Health") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r ah graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(allied[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_smooth(se=FALSE) + geom_point() + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to spring 2024", subtitle = "Allied Health") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
+
+\newpage
+
+# Applied Technology
+
+```{r at, echo=FALSE, message=FALSE, warning=FALSE}
+applied<-spring %>% filter(Division == "Applied Technology")
+applied$`Percent Change Headcount`<-percent(applied$`Percent Change Headcount`, accuracy = 0.1)
+applied$`Percent Hour Difference`<-percent(applied$`Percent Hour Difference`, accuracy = 0.1)
+applied.headcount<-applied[,c(1:2,7,5,9:10)]
+applied.hours<-applied[,c(1:2, 8,6,11:12)]
+aph<-kable(applied.headcount[1:current.week,], "latex", booktabs = TRUE, caption = paste("Duplicated Course Enrollment of Applied Technology for week", current.week, sep = " ")) %>% kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+apc<-kable(applied.hours[1:current.week,][1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of Applied Technology for week", current.week, sep = " ")) %>%  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+aph
+apc
+pivot_longer(applied[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to spring 2024", subtitle = "Applied Technology") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r at graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(applied[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth() + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to spring 2024", subtitle = "Applied Technology") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
+\newpage
+
+# Humanitites and Social Sciences
+
+```{r hs, echo=FALSE, message=FALSE, warning=FALSE}
+hum<-spring %>% filter(Division == "Humanities and Social Sciences")
+hum$`Percent Change Headcount`<-percent(hum$`Percent Change Headcount`, accuracy = 0.1)
+hum$`Percent Hour Difference`<-percent(hum$`Percent Hour Difference`, accuracy = 0.1)
+hum.head<-hum[,c(1:2,7,5,9:10)]
+hum.hours<-hum[,c(1:2, 8,6,11:12)]
+hh<-kable(hum.head[1:current.week,], "latex", booktabs = TRUE, caption = paste("Course Enrollment of Humanities and Social Sciences for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+hc<-kable(hum.hours[1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of Humanities and Social Sciences for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+hh
+hc
+pivot_longer(hum[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to spring 2024", subtitle = "Humanities and Social Sciences") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r hs graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(hum[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to spring 2024", subtitle = "Humanities and Social Sciences") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
+
+\newpage
+
+# Business, Computer Science, and Math
+
+```{r mb, echo=FALSE, message=FALSE, warning=FALSE}
+mb<-spring %>% filter(Division == "Business, Computer Science, and Math")
+mb$`Percent Change Headcount`<-percent(mb$`Percent Change Headcount`, accuracy = 0.1)
+mb$`Percent Hour Difference`<-percent(mb$`Percent Hour Difference`, accuracy = 0.1)
+mb.head<-mb[,c(1:2,7,5,9:10)]
+mb.hours<-mb[,c(1:2, 8,6,11:12)]
+mh<-kable(mb.head[1:current.week,], "latex", booktabs = TRUE, caption = paste("Duplicated Course Enrollment of Business, Computer Science, and Math for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+mc<-kable(mb.hours[1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of Business, Computer Science, and Math for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+mh
+mc
+pivot_longer(mb[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to Spring 2024", subtitle = "Business, Computer Science, and Math") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r mb graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(mb[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to Spring 2024", subtitle = "Business, Computer Science, and Math") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
+\newpage
+
+# Nursing
+
+```{r nu, echo=FALSE, message=FALSE, warning=FALSE}
+nurse<-spring %>% filter(Division == "Nursing")
+nurse$`Percent Change Headcount`<-percent(nurse$`Percent Change Headcount`, accuracy = 0.1)
+nurse$`Percent Hour Difference`<-percent(nurse$`Percent Hour Difference`, accuracy = 0.1)
+nurse.head<-nurse[,c(1:2,7,5,9:10)]
+nurse.hours<-nurse[,c(1:2, 8,6,11:12)]
+nh<-kable(nurse.head[1:current.week,], "latex", booktabs = TRUE, caption = paste("Duplicated Course Enrollment of Nursing for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+nc<-kable(nurse.hours[1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of Nursing for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+nh
+nc
+pivot_longer(nurse[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to Spring 2024", subtitle = "Nursing") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r nu graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(nurse[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to Spring 2024", subtitle = "Nursing") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
+
+\newpage
+
+# Life and Physical Science
+
+```{r ls, echo=FALSE, message=FALSE, warning=FALSE}
+ls<-spring %>% filter(Division == "Life and Physical Science")
+ls$`Percent Change Headcount`<-percent(ls$`Percent Change Headcount`, accuracy = 0.1)
+ls$`Percent Hour Difference`<-percent(ls$`Percent Hour Difference`, accuracy = 0.1)
+ls.head<-ls[,c(1:2,7,5,9:10)]
+ls.hour<-ls[,c(1:2,8,6,11:12)]
+lh<-kable(ls.head[1:current.week,], "latex", booktabs = TRUE, caption = paste("Duplicated Course Enrollment of Life and Physical Science for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+lc<-kable(ls.hour[1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of Life and Physical Science for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+lh
+lc
+pivot_longer(ls[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to Spring 2024", subtitle = "Life and Physical Science") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r ls graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(ls[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to Spring 2024", subtitle = "Life and Physical Science") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
+\newpage
+
+# SICCM
+
+```{r si, echo=FALSE, message=FALSE, warning=FALSE}
+si<-spring %>% filter(Division == "SICCM")
+si$`Percent Change Headcount`<-percent(si$`Percent Change Headcount`, accuracy = 0.1)
+si$`Percent Hour Difference`<-percent(si$`Percent Hour Difference`, accuracy = 0.1)
+si.head<-si[,c(1:2,7,5,9:10)]
+si.hour<-si[,c(1:2, 8,6,11:12)]
+sh<-kable(si.head[1:current.week,], "latex", booktabs = TRUE, caption = paste("Duplicated Course Enrollment of SICCM for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+sc<-kable(si.hour[1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of SICCM for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+sh
+sc
+pivot_longer(si[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to Spring 2024", subtitle = "SICCM") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r si graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(si[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to Spring 2024", subtitle = "SICCM") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
+\newpage
+
+# Workforce Development
+
+```{r wd, echo=FALSE, message=FALSE, warning=FALSE}
+wd<-spring %>% filter(Division == "Workforce Development")
+wd$`Percent Change Headcount`<-percent(wd$`Percent Change Headcount`, accuracy = 0.1)
+wd$`Percent Hour Difference`<-percent(wd$`Percent Hour Difference`, accuracy = 0.1)
+wd.head<-wd[,c(1:2,7,5,9:10)]
+wd.hour<-wd[,c(1:2, 8,6,11:12)]
+wh<-kable(wd.head[1:current.week,], "latex", booktabs = TRUE, caption = paste("Duplicated Course Enrollment of Workforce Development for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+wc<-kable(wd.hour[1:current.week,], "latex", booktabs = TRUE, caption = paste("Credit Hours of Workforce Development for week", current.week, sep = " ")) %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header", "scale_down", "hold_position"))
+wh
+wc
+pivot_longer(wd[1:current.week,c(1,3,5,7)], names_to = "Year", values_to = "Number", cols=E22:E24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Duplicated Course Enrollment Comparision spring 2022 to Spring 2024", subtitle = "Workforce Development") + labs(x="Week", y="Duplicated Course Enrollment")+ scale_color_discrete(labels=c("Course Enrollment 2022", "Course Enrollment 2023", "Course Enrollment 2024"))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+```{r wd graphs, echo=FALSE, message=FALSE, warning=FALSE}
+pivot_longer(wd[1:current.week,c(1,4,6,8)], names_to = "Year", values_to = "Number", cols=H22:H24) %>% ggplot(aes(x=Week, y=Number, col=Year)) + geom_point() + geom_smooth(se=FALSE) + scale_x_continuous(breaks= seq(1,current.week, by=1)) + labs(title="Credit Hour Comparision spring 2022 to Spring 2024", subtitle = "Workforce Development") + labs(x="Week", y="Credit Hours")+ scale_color_discrete(labels=c('Credit Hours 2022', 'Credit Hours 2023', 'Credit Hours 2024'))+ theme(legend.position="bottom", panel.grid.minor = element_blank())
+```
+
+
